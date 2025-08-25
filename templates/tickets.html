@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form method="get" class="flex gap-2 mb-3">
+  <input name="q" value="{{ q }}" placeholder="Search tickets..." class="border p-2 rounded flex-1">
+  <button class="bg-black text-white px-4 py-2 rounded">Search</button>
+</form>
+
+<p class="text-sm text-zinc-600 mb-4">Open: {{counts.open_count or 0}} · Closed: {{counts.closed_count or 0}}</p>
+
+<form action="/tickets/new" method="post" class="grid gap-2 mb-6 p-4 bg-white rounded-xl shadow">
+  <input name="title" placeholder="Ticket title" class="border p-2 rounded" required>
+  <textarea name="desc" placeholder="Describe the issue" class="border p-2 rounded"></textarea>
+  <select name="priority" class="border p-2 rounded">
+    <option>Low</option><option>Medium</option><option>High</option>
+  </select>
+  <button class="bg-black text-white px-4 py-2 rounded">Create ticket</button>
+</form>
+
+<div class="grid gap-3">
+  {% for t in tickets %}
+    <div class="bg-white rounded-xl shadow p-4 flex items-start justify-between">
+      <div>
+        <div class="font-semibold">#{{t.id}} — {{t.title}}</div>
+        <div class="text-sm text-zinc-600">{{t.desc}}</div>
+        <div class="mt-1 text-xs flex gap-2">
+          <span class="px-2 py-0.5 rounded
+            {% if t.priority == 'High' %} bg-red-100 text-red-700
+            {% elif t.priority == 'Medium' %} bg-amber-100 text-amber-700
+            {% else %} bg-zinc-100 text-zinc-700 {% endif %}">
+            {{t.priority}}
+          </span>
+          <span class="px-2 py-0.5 rounded {% if t.status=='Open' %}bg-emerald-100 text-emerald-700{% else %}bg-zinc-200{% endif %}">
+            {{t.status}}
+          </span>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        {% if t.status == 'Open' %}
+        <form action="/tickets/{{t.id}}/close" method="post">
+          <button class="text-sm px-3 py-1 rounded bg-emerald-600 text-white">Close</button>
+        </form>
+        {% endif %}
+        <form action="/tickets/{{t.id}}/delete" method="post">
+          <button class="text-sm px-3 py-1 rounded bg-zinc-700 text-white">Delete</button>
+        </form>
+      </div>
+    </div>
+  {% else %}
+    <p class="text-zinc-600">No tickets yet—create one above.</p>
+  {% endfor %}
+</div>
+{% endblock %}
